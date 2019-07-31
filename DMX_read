@@ -60,6 +60,9 @@ void loop() {
     analogWrite(RedPin,   DMXSerial.read(1));
     analogWrite(GreenPin, DMXSerial.read(2));
     analogWrite(BluePin,  DMXSerial.read(3));
+    au16data[0] = DMXSerial.read(1);
+    au16data[1] = DMXSerial.read(2);
+    au16data[2] = DMXSerial.read(3);
     slave.poll(au16data, 16);
 
   } else {
