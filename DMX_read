@@ -18,7 +18,10 @@
 // - - - - -
 
 #include <DMXSerial.h>
+#include <ModbusRtu.h>
 
+// assign the Arduino pin that must be connected to RE-DE RS485 transceiver
+#define TXEN  4 
 // Constants for demo program
 
 const int RedPin =    9;  // PWM output pin for Red Light.
@@ -28,8 +31,12 @@ const int BluePin =   5;  // PWM output pin for Blue Light.
 #define RedDefaultLevel   100
 #define GreenDefaultLevel 200
 #define BlueDefaultLevel  255
-
+Modbus slave(1,0,TXEN); // this is slave @1 and RS-485
+uint16_t au16data[3] = {DMXSerial.read(1), DMXSerial.read(2), DMXSerial.read(3)};
+   
 void setup () {
+   slave.begin( 19200 ); // baud-rate at 19200
+
   DMXSerial.init(DMXReceiver);
   
   // set some default values
@@ -41,7 +48,6 @@ void setup () {
   pinMode(RedPin,   OUTPUT); // sets the digital pin as output
   pinMode(GreenPin, OUTPUT);
   pinMode(BluePin,  OUTPUT);
-  
 }
 
 
@@ -54,6 +60,7 @@ void loop() {
     analogWrite(RedPin,   DMXSerial.read(1));
     analogWrite(GreenPin, DMXSerial.read(2));
     analogWrite(BluePin,  DMXSerial.read(3));
+    slave.poll(au16data, 16);
 
   } else {
     // Show pure red color, when no data was received since 5 seconds or more.
@@ -61,7 +68,6 @@ void loop() {
     analogWrite(GreenPin, GreenDefaultLevel);
     analogWrite(BluePin,  BlueDefaultLevel);
   } // if
-
 }
 
 // End.
