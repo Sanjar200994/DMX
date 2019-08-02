@@ -21,9 +21,15 @@
 #include <Modbus.h>
 #include <ModbusSerial.h>
 #include <SoftwareSerial.h>
-//ModbusSerial object
+#include <TM1637Display.h>
+const int CLK = 2;//Set the CLK pin connection to the display
+const int DIO = 3; //Set the DIO pin connection to the display
+TM1637Display display(CLK, DIO);
+int NumReg = 0; //переменная регистра
 ModbusSerial mb;
 SoftwareSerial mbSerial(10,11);
+int button_up_State = 0;
+int button_down_State = 0;
 
 
 const int RedPin =    9;  // PWM output pin for Red Light.
@@ -34,15 +40,18 @@ const int BluePin =   5;  // PWM output pin for Blue Light.
 #define GreenDefaultLevel 200
 #define BlueDefaultLevel  255
 
+const int button_up =  8;   // переключение регистра вверх
+const int button_down =   7; // переключение регистра вниз
 
    
 void setup () {
-  
+   display.setBrightness(0x0a);
    // Config Modbus Serial (port, speed, byte format) 
     mb.config(&mbSerial, 19200, 12);
     // Set the Slave ID (1-247)
     mb.setSlaveId(1);  
-    mb.addHreg(100, 0);
+    mb.addHreg(NumReg, 0);
+
 
  DMXSerial.init(DMXReceiver);
   
@@ -71,8 +80,19 @@ analogWrite(BluePin,  DMXSerial.read(3));
     analogWrite(GreenPin, GreenDefaultLevel);
     analogWrite(BluePin,  BlueDefaultLevel);
  } // if
- mb.Hreg(100, DMXSerial.read(1));
+ mb.Hreg(NumReg, DMXSerial.read(1));
  
+  button_up_State = digitalRead(button_up);
+  button_down_State = digitalRead(button_down);
+  if (button_up_State==HIGH){
+    NumReg++;
+    display.showNumberDec(NumReg);
+    }
+
+   if (button_down_State==HIGH){
+    NumReg--;
+    display.showNumberDec(NumReg);
+    }
 
   
 }
